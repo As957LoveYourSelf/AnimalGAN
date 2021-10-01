@@ -40,10 +40,36 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self):
+    def __init__(self, input_feature):
+        """
+        input shape: [batch, channel, H, W]
+        H = 256, W = 256
+        """
         super(Discriminator, self).__init__()
-        pass
+        self.discriminate = nn.Sequential(
+            # shape = [256, 256]
+            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(inplace=True),
+            # shape = [128, 128]
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.InstanceNorm2d(128),
+            nn.LeakyReLU(inplace=True),
+            # shape = [64, 64]
+            nn.Conv2d(128, 128, kernel_size=4, stride=2, padding=1),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
+            nn.InstanceNorm2d(256),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
+            nn.InstanceNorm2d(256),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(256, 1, kernel_size=3, stride=1, padding=1)
+        )
 
+    def forward(self):
+        pass
 
 
 class AnimalGAN(nn.Module):
