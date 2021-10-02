@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.functional as F
 import blocks
+from functions import *
 
 
 class Generator(nn.Module):
@@ -31,12 +32,21 @@ class Generator(nn.Module):
             nn.Conv2d(64, 3, kernel_size=3, stride=1, padding=1)
         )
 
-    def generate_image(self, input_features):
+    def generate(self, input_features):
         out_features = self.generate(input_features)
         return out_features
 
-    def forward(self, input_features, wadv=300, wcon=1.5, wgra=3, wcol=50):
-        pass
+    def forward(self, input_features, content_feature, grayscale, wadv=300, wcon=1.5, wgra=3, wcol=50):
+        """
+        loss = Wadv*(pow2(G(p) - 1)) + Wcon*Lcon(G, D) + WgraLgra(G, D) + WcolLcol(G, D)
+        """
+        g_image = self.generate(input_features)
+        g_content = self.generate(content_feature)
+        g_loss = wadv * torch.square(input_features - 1)
+        t_loss = wcon * content_loss(g_image, content_feature) + wgra * gram_loss(grayscale,
+                                                                                  g_image) + wcol * color_loss(
+            content_feature, g_content)
+        return g_loss+t_loss
 
 
 class Discriminator(nn.Module):
@@ -65,7 +75,7 @@ class Discriminator(nn.Module):
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.InstanceNorm2d(256),
             nn.LeakyReLU(inplace=True),
-            nn.Conv2d(256, 1, kernel_size=3, stride=1, padding=1)
+            nn.Conv2d(256, 1, kernel_size=3, stride=1, padding=1),
         )
 
     def forward(self):
@@ -76,27 +86,3 @@ class AnimalGAN(nn.Module):
     def __init__(self):
         super(AnimalGAN, self).__init__()
         pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
