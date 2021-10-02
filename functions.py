@@ -1,9 +1,7 @@
 import torch.nn.functional as F
 import torch
 from torchvision.models import vgg19
-import torchvision.transforms as transform
-import cv2
-from utils import *
+from utils import get_yuv, rgb2yuv
 
 vggpath = "../../pretrainmodels/vgg19-dcbb9e9d.pth"
 vgg = vgg19().cuda()
