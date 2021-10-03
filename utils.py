@@ -28,7 +28,7 @@ def rgb2yuv(rgb_tensor):
 
 def get_yuv(yuv_tensor):
     """
-    input: YUV Tensor, shape = [batch,channel,H*W]
+    input: YUV Tensor, shape = [batch, channel, H, W]
     return: Y, U, V
     """
     y = yuv_tensor[:, 0]

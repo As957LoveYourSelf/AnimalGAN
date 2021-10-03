@@ -13,7 +13,7 @@ class Generator(nn.Module):
         for i in range(res_n):
             residual_block.append(blocks.InvertedResidualBlock(256, 256))
 
-        self.generate = nn.Sequential(
+        self.generator = nn.Sequential(
             blocks.ConvBlock(3, 64, kernel_size=3, stride=1, padding=1),
             blocks.ConvBlock(64, 64, kernel_size=3, stride=1, padding=1),
             blocks.DownSample(64, 128),
@@ -32,8 +32,9 @@ class Generator(nn.Module):
             nn.Conv2d(64, 3, kernel_size=3, stride=1, padding=1)
         )
 
-    def generate(self, input_features):
-        out_features = self.generate(input_features)
+    def generate(self, input_features, device='gpu'):
+        input_features.to(device)
+        out_features = self.generator(input_features)
         return out_features
 
     def forward(self, input_features, content_feature, grayscale, wadv=300, wcon=1.5, wgra=3, wcol=50):
@@ -46,7 +47,7 @@ class Generator(nn.Module):
         t_loss = wcon * content_loss(g_image, content_feature) + wgra * gram_loss(grayscale,
                                                                                   g_image) + wcol * color_loss(
             content_feature, g_content)
-        return g_loss+t_loss
+        return g_loss + t_loss
 
 
 class Discriminator(nn.Module):
@@ -78,8 +79,16 @@ class Discriminator(nn.Module):
             nn.Conv2d(256, 1, kernel_size=3, stride=1, padding=1),
         )
 
-    def forward(self):
-        pass
+    def discriminator(self, x, device='gpu'):
+        x.to(device)
+        out = self.discriminate(x)
+        return out
+
+    def forward(self, generate_content_feature, style_feature, gray_style_feature, smooth_gray_feature):
+        d_loss = torch.squeeze(self.discriminator(style_feature) - 1.0)
+        t_loss = torch.squeeze(self.discriminator(generate_content_feature)) + torch.squeeze(
+            self.discriminator(gray_style_feature)) + 0.1*torch.squeeze(self.discriminator(smooth_gray_feature))
+        return d_loss + t_loss
 
 
 class AnimalGAN(nn.Module):
