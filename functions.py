@@ -20,8 +20,8 @@ def gram_matrix(features):
     return (gram_mat*b)/(c*h*w)
 
 
-def adversarial_loss(generator, discriminator):
-    pass
+def adversarial_loss(generator_feature, discriminator_feature):
+    return F.mse_loss(generator_feature, discriminator_feature)
 
 
 def gram_loss(grayscale_style, generate_feature):

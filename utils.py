@@ -1,6 +1,9 @@
 import torch
-import torch.nn.functional as F
+import cv2
 import numpy as np
+import os
+import glob
+import tqdm
 
 
 def rgb2yuv(rgb_tensor):
@@ -35,6 +38,38 @@ def get_yuv(yuv_tensor):
     u = yuv_tensor[:, 1]
     v = yuv_tensor[:, 2]
     return y, u, v
+
+
+def image_to_gray(image_dat):
+    return cv2.cvtColor(image_dat, cv2.COLOR_BGR2GRAY)
+
+
+def images2gray(images_path, save_path):
+    images = glob.glob(os.path.join(images_path, "*.jpg"))
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+    for img in tqdm.tqdm(images):
+        filename = os.path.basename(img)
+        image = cv2.imread(img)
+        image = image_to_gray(image)
+        cv2.imwrite(os.path.join(save_path, "gray_"+filename), image)
+    print("Done")
+
+
+if __name__ == '__main__':
+    imagedata_path = "./cartoonDataset"
+    style_paths = ["Hayao", "Paprika", "Shinkai", "SummerWar"]
+    type_paths = ["smooth", "style"]
+    for s in style_paths:
+        f_path = os.path.join(imagedata_path, s)
+        for t in type_paths:
+            tf_path = os.path.join(f_path, t)
+            images2gray(tf_path, os.path.join(f_path, "gray_"+t))
+
+
+
+
+
 
 
 
